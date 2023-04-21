@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/v50/github"
 	"github.com/shurcooL/githubv4"
+	"golang.org/x/sync/errgroup"
 )
 
 type Client struct {
@@ -45,6 +46,9 @@ func (c Client) HideCommentsMatching(ctx context.Context, org, repo string, nr i
 		},
 	}
 
+	g, ctx := errgroup.WithContext(ctx)
+	g.SetLimit(5) // hide 5 comments concurrently at most
+
 	for {
 		cs, res, err := c.c.Issues.ListComments(ctx, org, repo, nr, opts)
 		if err != nil {
@@ -56,29 +60,39 @@ func (c Client) HideCommentsMatching(ctx context.Context, org, repo string, nr i
 				continue
 			}
 
-			// hide comment
-			var m struct {
-				MinimizeComment struct {
-					MinimizedComment struct {
-						IsMinimized githubv4.Boolean
-					}
-				} `graphql:"minimizeComment(input: $input)"`
-			}
+			cm := cm
 
-			i := githubv4.MinimizeCommentInput{
-				SubjectID:  cm.GetNodeID(),
-				Classifier: githubv4.ReportedContentClassifiersOutdated,
-			}
+			g.Go(func() error {
+				// hide comment
+				var m struct {
+					MinimizeComment struct {
+						MinimizedComment struct {
+							IsMinimized githubv4.Boolean
+						}
+					} `graphql:"minimizeComment(input: $input)"`
+				}
 
-			if err := c.g.Mutate(ctx, &m, i, nil); err != nil {
-				return fmt.Errorf("hiding comment %v: %w", cm.GetHTMLURL(), err)
-			}
+				i := githubv4.MinimizeCommentInput{
+					SubjectID:  cm.GetNodeID(),
+					Classifier: githubv4.ReportedContentClassifiersOutdated,
+				}
+
+				if err := c.g.Mutate(ctx, &m, i, nil); err != nil {
+					return fmt.Errorf("hiding comment %v: %w", cm.GetHTMLURL(), err)
+				}
+
+				return nil
+			})
 		}
 
 		if res.NextPage == 0 {
 			break
 		}
 		opts.Page = res.NextPage
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("hiding comments: %w", err)
 	}
 
 	return nil

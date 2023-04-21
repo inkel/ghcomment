@@ -8,6 +8,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 	github.com/shurcooL/githubv4 v0.0.0-20230305132112-efb623903184
 	golang.org/x/oauth2 v0.6.0
+	golang.org/x/sync v0.1.0
 )
 
 require (
