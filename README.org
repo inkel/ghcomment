@@ -1,0 +1,21 @@
+* =ghcomment= - comment on GitHub pull requests and issues from the CLI
+This is a simple program that allows you to leave comments on GitHub issues and pull requests in a very simple manner, optionally also hiding previous comments that match a given regular expression.
+
+** Usage
+#+begin_src shell
+  ghcomment -owner inkel -repo ghcomment \
+            -nr 1 \
+            -token $token \
+            -body="your comment's body" \
+            -hide-regexp='^this'
+#+end_src
+
+The program accepts the following flags:
+- =owner= and =repo= are the owner and repository name.
+- =nr= is the pull request or issue number.
+- =token= is your GitHub [[https://github.com/settings/tokens?type=beta][access token]].
+- =body= should be your comment's Markdown body; you can add a =@= character and use a file path instead.
+- =hide-regexp= is an optional regular expression used to match any previous comments and hide them.
+
+** LICENSE
+MIT. See [LICENSE](LICENSE).
