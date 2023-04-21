@@ -51,17 +51,6 @@ func realMain(ctx context.Context, cfg config) error {
 
 	c := ghcomment.NewClient(ctx, httpClient)
 
-	if cfg.HideRegexp != "" {
-		re, err := regexp.Compile(cfg.HideRegexp)
-		if err != nil {
-			return err
-		}
-
-		if err := c.HideCommentsMatching(ctx, cfg.Owner, cfg.Repo, cfg.Number, re); err != nil {
-			return err
-		}
-	}
-
 	body := cfg.Body
 
 	if body[0] == '@' { // read from file
@@ -74,6 +63,17 @@ func realMain(ctx context.Context, cfg config) error {
 
 	if err := c.Comment(ctx, cfg.Owner, cfg.Repo, cfg.Number, body); err != nil {
 		return err
+	}
+
+	if cfg.HideRegexp != "" {
+		re, err := regexp.Compile(cfg.HideRegexp)
+		if err != nil {
+			return err
+		}
+
+		if err := c.HideCommentsMatching(ctx, cfg.Owner, cfg.Repo, cfg.Number, re); err != nil {
+			return err
+		}
 	}
 
 	return nil
