@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"syscall"
 
-	"github.com/bradleyfalzon/ghinstallation"
+	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v50/github"
 	"github.com/gregjones/httpcache"
 	"github.com/inkel/ghcomment"
