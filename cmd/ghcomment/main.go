@@ -71,7 +71,7 @@ func realMain(ctx context.Context, cfg config) error {
 			return err
 		}
 
-		if err := c.HideCommentsMatching(ctx, cfg.Owner, cfg.Repo, cfg.Number, re); err != nil {
+		if err := c.HideCommentsMatching(ctx, cfg.Owner, cfg.Repo, cfg.Number, re.MatchString); err != nil {
 			return err
 		}
 	}

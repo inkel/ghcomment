@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"regexp"
 
 	"github.com/google/go-github/v50/github"
 	"github.com/shurcooL/githubv4"
@@ -39,7 +38,9 @@ func (c Client) Comment(ctx context.Context, org, repo string, nr int, body stri
 	return err
 }
 
-func (c Client) HideCommentsMatching(ctx context.Context, org, repo string, nr int, re *regexp.Regexp) error {
+type MatchFunc func(string) bool
+
+func (c Client) HideCommentsMatching(ctx context.Context, org, repo string, nr int, matchFn MatchFunc) error {
 	opts := &github.IssueListCommentsOptions{
 		ListOptions: github.ListOptions{
 			PerPage: 100,
@@ -56,7 +57,7 @@ func (c Client) HideCommentsMatching(ctx context.Context, org, repo string, nr i
 		}
 
 		for _, cm := range cs {
-			if !re.MatchString(cm.GetBody()) {
+			if !matchFn(cm.GetBody()) {
 				continue
 			}
 
